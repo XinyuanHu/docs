@@ -1,72 +1,92 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "Flagler Health API",
+    "version": "2024.01.05",
+    "description": "Spine Into January",
     "license": {
-      "name": "MIT"
+      "name": "Proprietary",
+      "url": "https://flaglerhealth.io"
     },
-    "version": "1.0.0"
+    "contact": {
+      "name": "Flagler Health",
+      "url": "https://flaglerhealth.io",
+      "email": "eng@flaglerhealth.com"
+    }
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "http://localhost:3000"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "flaglerJWT": []
     }
   ],
   "paths": {
-    "/plants": {
+    "/user/profile": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
+        "tags": [
+          "user"
         ],
+        "summary": "Get User profile",
+        "description": "Get User profile",
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "successful operation",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "$ref": "#/components/schemas/UserProfile"
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
+          "500": {
+            "description": "Error"
+          }
+        }
+      }
+    },
+    "/user/list/all": {
+      "get": {
+        "tags": [
+          "user",
+          "list"
+        ],
+        "summary": "List all users (internal only)",
+        "description": "List all users",
+        "responses": {
+          "200": {
+            "description": "successful operation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/UserProfile"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Error"
           }
         }
-      },
+      }
+    },
+    "/user/search": {
       "post": {
-        "description": "Creates a new plant in the store",
+        "tags": [
+          "user"
+        ],
+        "summary": "Search for users",
+        "description": "Search for users",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Search criteria for users",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/UserSearch"
               }
             }
           },
@@ -74,57 +94,197 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+            "description": "Successful operation"
           }
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/user/{id}": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update a user",
+        "description": "Update an existing user",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ID of plant to delete",
+            "description": "User ObjectID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
+        "requestBody": {
+          "description": "Update an existent user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
           },
-          "400": {
-            "description": "unexpected error",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/UserProfile"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Error"
+          }
+        }
+      }
+    },
+    "/user/sendinvite/{id}": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Send email invite to a user",
+        "description": "Send email invite to user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "User ObjectID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Send email invite to user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEmailInvite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error"
+          }
+        }
+      }
+    },
+    "/user/passwordreset": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Send email password reset to a user",
+        "description": "Send email password reset a to user",
+        "requestBody": {
+          "description": "Send email password reset a to user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPasswordResetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error"
+          }
+        }
+      }
+    },
+    "/user/updatepassword": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update user's password",
+        "description": "Update user's password",
+        "requestBody": {
+          "description": "Update user's password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error"
+          }
+        }
+      }
+    },
+    "/user/list/updateuserpassword": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update a user's password as a Flagler admin",
+        "description": "Update a user's password as a Flagler admin",
+        "requestBody": {
+          "description": "Update a user's password as a Flagler admin",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordAdmin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "500": {
+            "description": "Error"
           }
         }
       }
@@ -132,64 +292,239 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "UserNew": {
         "type": "object",
         "properties": {
           "name": {
-            "description": "The name of the plant",
-            "type": "string"
+            "type": "string",
+            "description": "The user's name.",
+            "example": "TestUser Flagler"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "email": {
+            "type": "string",
+            "description": "The user's email.",
+            "example": "dev+testuser@flaglerhealth.io"
+          },
+          "password": {
+            "type": "string",
+            "description": "password",
+            "example": "supersecretpassword"
+          },
+          "roleName": {
+            "type": "string",
+            "description": "valid role name. \"Admin\" for customers. One of [\"FlaglerETL\", \"RetoolAPI\"] for internal."
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "expiration in ms. Default 300000",
+            "default": 300000
+          },
+          "flaglerType": {
+            "type": "string",
+            "description": "type of the user. One of \"customer\" (default), \"flagler\", or \"test\"."
+          }
+        },
+        "required": [
+          "roleName",
+          "email",
+          "password"
+        ]
+      },
+      "UserUpdate": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "company objectid",
+            "example": "Admin"
+          },
+          "roleName": {
+            "type": "string",
+            "description": "Valid user role name. Do not send role object with permissions array",
+            "example": "Admin"
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "expiration in ms. Default 300000",
+            "default": 300000
           }
         }
       },
-      "NewPlant": {
+      "UserProfile": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
             "type": "object",
             "properties": {
               "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+                "type": "string",
+                "description": "The user ID.",
+                "example": "abcde123"
               }
             }
           }
         ]
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "UserEmailInvite": {
         "type": "object",
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
+          "password": {
+            "type": "string",
+            "description": "Valid user password. Required since we don't store user passwords in plaintext",
+            "example": "abc123"
+          }
+        }
+      },
+      "UserPasswordResetRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Valid user email",
+            "example": "abc123@gmail.com"
+          }
+        }
+      },
+      "UpdatePassword": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Valid reset token",
+            "example": "abc123"
           },
-          "message": {
-            "type": "string"
+          "userId": {
+            "type": "string",
+            "description": "Valid user id",
+            "example": "abc123"
+          },
+          "password": {
+            "type": "string",
+            "description": "New password",
+            "example": "abc123"
+          }
+        }
+      },
+      "UpdatePasswordAdmin": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Valid user id",
+            "example": "abc123"
+          },
+          "password": {
+            "type": "string",
+            "description": "New password",
+            "example": "abc123"
+          }
+        }
+      },
+      "UserSearch": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "description": "Company ObjectId"
+              },
+              "userIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "ObjectIds to match; overrides _id"
+                }
+              },
+              "companyId": {
+                "description": "Company ObjectId to filter by If not given or empty, then returns all companies.",
+                "type": "string"
+              },
+              "name": {
+                "description": "value to search for in the name (search strategy by case insensitive regex)",
+                "type": "string"
+              },
+              "email": {
+                "description": "value to search for in the email field (search strategy by case insensitive regex)",
+                "type": "string"
+              },
+              "roleNames": {
+                "description": "value to search for in the roleNames",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "value to search for in the roleNames. If not given or empty, then returns all roles.",
+                  "enum": [
+                    "Admin",
+                    "Provider"
+                  ]
+                }
+              },
+              "flaglerType": {
+                "type": "string",
+                "description": "type of the user. One of \"customer\" (default), \"flagler\", or \"test\".",
+                "enum": [
+                  "customer",
+                  "flagler",
+                  "test"
+                ]
+              }
+            }
+          },
+          "includeCompany": {
+            "description": "whether to include Company model associated in the result",
+            "type": "boolean",
+            "example": true
+          },
+          "page": {
+            "description": "page number",
+            "type": "integer",
+            "default": 1
+          },
+          "limit": {
+            "description": "limit per page number",
+            "type": "integer",
+            "default": 10
+          },
+          "sort": {
+            "description": "sort order of the columns. If not provided, sorts asc for User ObjectId.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "description": "column name to sort",
+                  "type": "string"
+                },
+                "order": {
+                  "description": "1 for ascending. -1 for descending",
+                  "type": "integer"
+                }
+              }
+            },
+            "example": [
+              {
+                "name": "name",
+                "order": 1
+              },
+              {
+                "name": "prettyName",
+                "order": 1
+              }
+            ]
           }
         }
       }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "user",
+      "description": "user operations"
+    },
+    {
+      "name": "list",
+      "description": "list operations (internal only)"
+    }
+  ]
 }
